@@ -1,0 +1,183 @@
+Data file
+   |--ID-||-------NAME-------||--CITY--|ST|---JOB--|DEPT.
+ 1:Filesize(20)
+ 2:1234567Adams, Robert       Arlington TXprogrammerRnD  
+ 3:8763921Anderson, Terri     Bedford   TXaccountantAcct 
+ 4:3827391Barker, Becky       Conroe    TXmanager   RnD  
+ 5:8372900Carson, Johnnie     Dallas    TXaccountantAR   
+ 6:2300830Carter, Billie      Euless    TXprogrammerRnD  
+ 7:8338200Carter, Cathy       Fort WorthTXmanager   Acct 
+ 8:9003091Chapman, Richard    Dallas    TXmanager   AR   
+ 9:4037010Corner, Bobbie      HuntsvilleTXsecretary RnD  
+10:3333333Cummings, Barbara   Willis    TXmanager   Adv  
+11:3333334Davidson, Tina      Conroe    TXprogrammerAdv  
+12:3333335Ferguson, Cliff     HuntsvilleTXstatisticsAdv  
+13:8383112George, Carol       Fort WorthTXaccountantAcct 
+14:3333336Graham, Mary        HuntsvilleTXwriter    Adv  
+15:2333922Hart, Marsha        Dallas    TXHCI designRnD  
+16:8383104Hartness, Ken       HuntsvilleTXprogrammerRnD  
+17:4093935Jackson, Julie      HuntsvilleTXstatisticsRnD
+18:0039391Martin, Karen       HuntsvilleTXprogrammerRnD
+19:9993931Rogers, Tom         HuntsvilleTXprogrammerAR
+20:4383700Barker, Bill        Dallas    TXaccountantAcct
+
+Inverted index
+City Index Length Positions
+Arlington     (1) (02)
+Bedford       (1) (03)
+Conroe        (2) (04)(11)
+Dallas        (4) (05)(08)(15)(20)
+Euless        (1) (06)
+Fort Worth    (2) (07)(13)
+Huntsville    (7) (09)(12)(14)(16)(17)(18)(19)
+Willis        (1) (10)
+
+Job Index Length Positions
+accountant   (4) (03)(05)(13)(20)
+HCI design   (1) (15)
+manager      (4) (04)(07)(08)(10)
+programmer   (6) (02)(06)(11)(16)(18)(19)
+secretary    (1) (09)
+statistics   (2) (12)(17)
+writer       (1) (14)
+
+Dept Index Length Positions
+Acct          (4) (03)(07)(13)(20)
+Adv           (4) (10)(11)(12)(14)
+AR            (3) (05)(08)(19)
+RnD           (8) (02)(04)(06)(09)(15)(16)(17)(18)
+
+count(index, key):
+    find key in index
+    return index record length
+
+process(index, key)
+    find key in index
+    for i = 1 to length
+        read data record at index record position(i)
+        doSomething(data record)
+
+Index records consist of key, length, and an array of position.
+Let InvertedSet be a size and an array of objects consisting of just length and an array of position.
+typedef                          01  CITY-INDEX-REC.
+    struct sIndexRecord {            05  CI-KEY          PIC X(10).
+        int length;                  05  CI-SET.
+        long position[1020];             10  CI-LENGTH   PIC 9(4) COMP.
+    } IndexRecord;                       10  CI-POSITION PIC 9(9) COMP OCCURS 1020 TIMES.
+typedef
+    struct sCityIndexRecord {    01  W-INVERTED-SET.
+        char key[10];                05  W-SIZE          PIC 9 COMP.
+        IndexRecord set;             05  W-SET OCCURS 3 TIMES.
+    } CityIndexRecord;                   10  W-LENGTH    PIC 9(4) COMP.                
+                                         10  W-POSITION  PIC 9(9) COMP
+typedef                                                  OCCURS 1020 TIMES
+    struct sInvertedSet {                                INDEXED BY X-CURRENT.
+        int size;
+        int current[3];
+        IndexRecord set[3];
+    } InvertedSet;
+InvertedSet invertedSet;
+
+To answer questions involving data with key values key1 and key2 and ...
+    perform intersection.
+To answer questions involving data with key values key1 or key2 or ...
+    perform union.
+Preparation:
+    inverted set size = 0
+    find key1 in index1.
+    add 1 to inverted set size
+    copy index record's set to inverted set(size)
+    find key2 in index2.
+    add 1 to inverted set size
+    copy index record's set to inverted set(size)
+    ...
+
+intersection(inverted set):
+    *** to put simply, find largest first position
+    *** while not past the end of one of the lists,
+    ***     advance current position in all lists until they are >= largest
+    ***     if all current positions in all lists are the same,
+    ***         then process record at that position
+    ***     advance current positions that match "largest" position and
+    ***     recalculate the largest current position
+    largest = 0
+    for k = 1 to inverted's size
+        set current(k) to 1
+        if inverted set(k)'s position(1) > largest
+            largest = inverted set(k)'s position(1)
+    done = false
+    while not done
+        match = true
+        for k = 1 to inverted's size (and not done)
+            search inverted set(k)'s position,
+                stop when current(k) > inverted set(k)'s length,
+                    then set done = true
+                or stop when inverted set(k)'s position(current(k)) >= largest,
+                    then if inverted set(k)'s position(current(k)) > largest
+                             set match = false
+        if match
+            process data record at largest
+        oldPosition = largest
+        largest = 0
+        for k = 1 to inverted's size (and not done)
+            if inverted set(k)'s position(current(k)) = oldPosition
+                set current(k) up by 1
+                if current(k) > inverted set(k)'s length
+                    set done = true
+            if not done and inverted set(k)'s position(current(k)) > largest
+                largest = inverted set(k)'s position(current(k))
+
+union(inverted set):
+    *** find smallest first position
+    *** while not past the end of all of the lists,
+    ***     process record at smallest position
+    ***     advance current positions in all lists that match smallest and
+    ***     recalculate smallest current position
+    smallest = 2147483647
+    count = 0
+    for k = 1 to size
+        set current(k) to 1
+        if current(k) > inverted set(k)'s length
+            count = count + 1
+        else if inverted set(k)'s position(1) < smallest
+            smallest = inverted set(k)'s position(1)
+    while count < inverted's size
+        read data record at smallest
+        process data record
+        oldPosition = smallest
+        smallest = 2147483647
+        for k = 1 to inverted's size
+            if current(k) <= inverted set(k)'s length
+                if inverted set(k)'s position(current(k)) = oldPosition
+                    set current(k) up by 1
+                    if current(k) > inverted set(k)'s length
+                        count = count + 1
+                if current(k) <= inverted set(k)'s length and
+                   inverted set(k)'s position(current(k)) < smallest
+                    smallest = inverted set(k)'s position(current(k))
+
+16,000 students
+Roughly 4,000 freshmen, 4,000 sophomores, etc.
+
+0   1   0   0   1   1   0   0   "2"   50   {1, 4, 5}
+0   1   2   3   4   5   6   7
+
+    01001100 {1, 4, 5}
+and 11100101 {0, 1, 2, 5, 7}
+------------
+    01000100 {1, 5}
+
+recpos = 0    
+for each number,
+    for each offset from 0 to 31
+        if number and bit[offset] not = 0
+            process recpos + offset + base
+    recpos += 32
+
+01000100
+01000000
+01000000
+
+
+
+

@@ -1,0 +1,119 @@
+Direct-access version
+
+UpdateFile
+    mainFilename
+    directFile
+    lastReadRecord
+    lastPos
+    header
+Actions:
+    open filename
+        mainFilename = filename
+        open mainFilename as directFile for input/output
+        if directFile does not exist
+            open mainFilename as directFile for output
+            initialize header with 0 records
+            write header
+            close directFile
+            open mainFilename as directFile for input/output
+        else
+            read header.
+        lastPos = 0
+
+    translatePosition(recordNumber)
+        skip header: in languages starting with record 1, add 1
+                     (If translating C or Java algorithms that use offsets
+                      starting with zero, add 1 for zero-offset languages and
+                      2 for languages starting with record 1)
+        In languages that treat files as collections of bytes (C, Java), you
+        must also multiply the record position by the size of a record in bytes.
+    
+    translateRecordNumber(position)
+        COBOL: subtract 1 from position (2 if using algorithms written with
+                                         zero as the first record)
+        C: divide position by size of record (then subtract 1 if using
+                                    algorithm with zero as the first record)
+        
+    find key: (assumes keys are sorted)
+        if lastPos not = 0 and key of lastReadRecord = key
+            found = true
+        else
+            first = 1
+            last = numberOfRecords
+            found = false
+            while first < last and not found, repeat
+                middle = (first + last) / 2
+                lastPos = translatePosition(middle)
+                read lastPos record from directFile into lastReadRecord
+                if key of lastReadRecord = key
+                    found = true
+                else if key < key of lastReadRecord
+                    last = middle - 1
+                else
+                    first = middle + 1
+
+    get key:
+        find key
+        if found
+            return lastReadRecord
+        else
+            return bad record
+        
+    update record:
+        if keys match,
+            lastReadRecord = record
+            (write lastPos record to directFile from lastReadRecord)
+        else
+            find key
+            if not found
+                report error
+            else
+                lastReadRecord = record
+                (write lastPos record to directFile from lastReadRecord)
+
+    insert record:
+        find key
+        if found
+            report error
+        else
+            rec = numberOfRecords
+            numberOfRecords = numberOfRecords + 1
+            while rec > 0 and not found, repeat
+                lastPos = translatePosition(rec)
+                read lastPos record from directFile into lastReadRecord
+                lastPos = translatePosition(rec+1)
+                if key of lastReadRecord > key of record
+                    write lastPos record of directFile from lastReadRecord
+                    rec = rec - 1
+                else
+                    found = true
+            lastReadRecord = record
+            if rec = 0
+                lastPos = translatePosition(1)
+            write lastPos record of directFile from record
+    
+    delete key:
+        find key
+        if found
+            rec = translateRecordNumber(lastPos)
+            prevPos = lastPos
+            nextPos = translatePosition(rec+1)
+            if rec = numberOfRecords
+                lastPos = 0
+            else
+                read nextPos record of directFile into lastReadRecord
+                write prevPos record of directFile from lastReadRecord
+                rec = rec + 1
+                while rec < numberOfRecords
+                    prevPos = nextPos
+                    nextPos = translatePosition(rec+1)
+                    read nextPos record of directFile into tempRecord
+                    write prevPos record of directFile from tempRecord
+                    rec = rec + 1
+            numberOfRecords = numberOfRecords - 1
+        else
+            report error
+
+    close
+        write first record of directFile from header
+        close directFile

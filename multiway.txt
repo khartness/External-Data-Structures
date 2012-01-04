@@ -1,0 +1,93 @@
+B+ tree
+1: Root(04)Filesize(06)
+2:Y(33)(02)Arlington (03)Bedford (03)
+3:Y(62)(04)Conroe (11)Conroe (05)Dallas (08)Dallas (15)Dallas (05)
+4:N(19)(02)C (03)E (05)H (06)
+5:Y(48)(06)Euless (07)Fort Worth (13)Fort Worth (06)
+6:Y(63)(09)Huntsville (12)Huntsville (14)Huntsville (10)Willis (00)
+
+What happens if record 16 also is from Huntsville?
+Can't promote Huntsville; it doesn't tell you which way to go.
+
+Multiway linked list
+
+Data file
+                                      nxtCity          nxtJob  nxtDept
+   |--ID-||-------NAME-------||--CITY--|    ST|---JOB--|    DEPT.
+ 1:Filesize(02)
+ 2:1234567Adams, Robert       Arlington (00)TXprogrammer(00)RnD  (00)
+ 3:8763921Anderson, Terri     Bedford   (00)TXaccountant(00)Acct (00)
+ 4:3827391Barker, Becky       Conroe    (00)TXmanager   (00)RnD  (00)
+ 5:8372900Carson, Johnnie     Dallas    (00)TXaccountant(03)AR   (00)
+ 6:2300830Carter, Billie      Euless    (00)TXprogrammer(02)RnD  (02)
+ 7:8338200Carter, Cathy       Fort Worth(00)TXmanager   (04)Acct (03)
+ 8:9003091Chapman, Richard    Dallas    (05)TXmanager   (07)AR   (05)
+ 9:4037010Corner, Bobbie      Huntsville(00)TXsecretary (00)RnD  (06)
+10:3333333Cummings, Barbara   Willis    (00)TXmanager   (08)Adv  (00)
+11:3333334Davidson, Tina      Conroe    (04)TXprogrammer(06)Adv  (10)
+12:3333335Ferguson, Cliff     Huntsville(09)TXstatistics(00)Adv  (11)
+13:8383112George, Carol       Fort Worth(07)TXaccountant(05)Acct (07)
+14:3333336Graham, Mary        Huntsville(12)TXwriter    (00)Adv  (12)
+15:2333922Hart, Marsha        Dallas    (08)TXHCI design(00)RnD  (09)
+16:8383104Hartness, Ken       Huntsville(14)TXprogrammer(11)RnD  (15)
+
+B+ tree city index
+ 1: Root(04)Filesize(08)
+ 2:Y(26)(02)(01)Arlington (03)
+ 3:Y(24)(03)(01)Bedford (05)
+ 4:N(38)(02)B (03)C (05)D (06)E (07)F (08)
+ 5:Y(23)(11)(02)Conroe (06)
+ 6:Y(23)(15)(03)Dallas (07)
+ 7:Y(23)(06)(01)Euless (08)
+ 8:Y(61)(13)(02)Fort Worth (16)(04)Huntsville (10)(01)Willis (00)
+
+
+Find key
+move first to next			first = new Node(data, first)
+add 1 to length                         length = length + 1
+move new-record-pos to first
+save index record			newRef = new Node(data)
+                                        newRef.next = first;
+                                        first = newRef;
+                                        length = length + 1;
+DeptIndex
+Acct 13 3
+Adv  14 4
+AR    8 2
+RnD  16 6
+
+JobIndex
+accountant 13 3
+HCI design 15 1
+manager    10 4
+programmer 16 4 
+secretary   9 1
+statistics 12 1
+writer     14 1
+
+How many programmers are from Huntsville?
+programmer: 16 (read 4 records + 2 index records)
+Answer 1
+
+How many secretaries are from Huntsville?
+read record 9
+Answer 1
+
+Intersection(key1, key2)
+    Lookup key1 in index
+    Lookup key2 in index
+    count = 0
+    if key1's length < key2's length
+        recpos = key1's first
+        while recpos not = 0
+            read data at recpos
+            if data's key2 matches key2
+                count = count + 1
+            recpos = data's next key1 position
+    else
+        recpos = key2's first
+        while recpos not = 0
+            read data at recpos
+            if data's key1 matches key1
+                count = count + 1
+            recpos = data's next key2 position

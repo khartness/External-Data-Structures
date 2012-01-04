@@ -1,0 +1,57 @@
+create-table
+get header
+ 8 read
+DUPLICATE ID!
+ 9 read
+DUPLICATE ID!
+ 5 read
+DUPLICATE ID!
+ 6 read
+DUPLICATE ID!
+ 6 read
+ 7 read
+DUPLICATE ID!
+12 read
+DUPLICATE ID!
+10 read
+DUPLICATE ID!
+16 read
+DUPLICATE ID!
+ 5 read
+ 6 read
+ 7 read
+ 8 read
+ 9 read
+10 read
+11 read
+DUPLICATE ID!
+18 read
+DUPLICATE ID!
+ 1 read
+DUPLICATE ID!
+ 2 read
+DUPLICATE ID!
+
+HASH FILE
+8349001 Sundman, Robert
+       <EMPTY RECORD>
+       <EMPTY RECORD>
+1234456 Williams, Betty
+1234457 Williams, Bob
+2345610 Reed, Anne
+0123456 Hartness, Ken
+0123457 Neudorf, Diane
+3456789 Arnold, Frank
+5839000 Thompson, Pat
+2345710 Prouty, Carol
+       <EMPTY RECORD>
+       <EMPTY RECORD>
+       <EMPTY RECORD>
+4567890 Cockburn, Mary
+       <EMPTY RECORD>
+6123000 Holloway, Gail
+       <EMPTY RECORD>
+       <EMPTY RECORD>
+       <EMPTY RECORD>
+       <EMPTY RECORD>
+       <EMPTY RECORD>

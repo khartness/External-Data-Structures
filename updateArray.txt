@@ -1,0 +1,91 @@
+Array version
+
+UpdateFile
+    lastPos
+    numberOfRecords
+Actions:
+    open filename
+        numberOfRecords = 0
+        lastPos = -1
+        
+    translatePosition(rec):
+        return rec - 1 in zero-offset languages (C, Java)
+    
+    translateRecordNumber(pos)
+        return pos + 1 in zero-offset languages (C, Java)
+        
+    find key: (assumes keys are sorted)
+        if lastPos not = -1 and key of array[lastPos] = key
+            found = true
+        else
+            first = 1
+            last = numberOfRecords
+            found = false
+            while first < last and not found, repeat
+                middle = (first + last) / 2
+                lastPos = translatePosition(middle)
+                if key of array[lastPos] = key
+                    found = true
+                else if key < key of array[lastPos]
+                    last = middle - 1
+                else
+                    first = middle + 1
+
+    get key:
+        find key
+        if found
+            return lastReadRecord
+        else
+            return bad record
+        
+    update record:
+        if keys match,
+            array[lastPos] = record
+        else
+            find key
+            if not found
+                report error
+            else
+                array[lastPos] = record
+
+    insert record:
+        find key
+        if found
+            report error
+        else
+            rec = numberOfRecords
+            numberOfRecords = numberOfRecords + 1
+            while rec > 0 and not found, repeat
+                lastPos = translatePosition(rec)
+                if key of array[lastPos] > key of record
+                    array[lastPos + 1] = array[lastPos]
+                    rec = rec - 1
+                else
+                    found = true
+            if rec = 0
+                lastPos = translatePosition(1)
+            else
+                ++lastPos;
+            array[lastPos] = record
+    
+    delete key:
+        find key
+        if found
+            rec = translateRecordNumber(lastPos)
+            prevPos = lastPos
+            nextPos = translatePosition(rec+1)
+            if rec = numberOfRecords
+                lastPos = 0
+            else
+                array[prevPos] = array[nextPos]
+                rec = rec + 1
+                while rec < numberOfRecords
+                    prevPos = nextPos
+                    nextPos = translatePosition(rec+1)
+                    array[prevPos] = array[nextPos]
+                    rec = rec + 1
+            numberOfRecords = numberOfRecords - 1
+        else
+            report error
+
+    close
