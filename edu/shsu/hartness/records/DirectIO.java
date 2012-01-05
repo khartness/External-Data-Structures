@@ -1,17 +1,32 @@
 package edu.shsu.hartness.records;
 
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+
+/**
+ * DirectIO
+ * A RandomAccessFile with additional methods to support handling the file as
+ * a file of objects. The file is presumed to begin with a header consisting
+ * of one or more "records" and including the number of records in the file
+ * and a reference to the head of a list of "deleted" records.
+ * Records large enough to contain one object, each, are allocated at the end
+ * of the file or removed from the deleted list.
+ * NOTE: My C mentality has caused me to make incorrect assumptions about Java's
+ * ability to recognize space requirements for instances of a class, so this is
+ * definitely unfinished code.
+ * @param <T> Object type of record.
+ * @author Ken T. N. Hartness (c) 2011
+ * @version %I%, %G%
+ * @see java.io.RandomAccessFile
+ **/
 public class DirectIO<T> extends RandomAccessFile {
-	private RecordHeader hdr;
+	private HeaderRecord hdr;
     public final static int recordSize = T.size() / Byte.size();
 
-    public DirectFile() {
-		super();
-		hdr = new RecordHeader();
-    }
-
     public DirectFile(String filename) throws IOException {
-		super(filename);
-		hdr = new RecordHeader();
+		super(filename, "rws");
+		hdr = new HeaderRecord();
 		try {
     		hdr.read(this);
 		} catch ( EOFException e ) {

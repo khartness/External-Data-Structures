@@ -1,5 +1,11 @@
 package edu.shsu.hartness.records;
 
+/**
+ * HeaderRecord
+ * the data saved in the first record of a DirectIO file. If the record size is smaller than two integers, enough records are used to represent the number of records and reference to the head of a deleted records list.
+ * @author Ken T. N. Hartness (c) 2011
+ * @see edu.shsu.hartness.records.DirectIO
+ **/
 public class HeaderRecord {
     private byte[] signature;
     private unsigned int fileSize;
