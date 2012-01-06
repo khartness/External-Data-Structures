@@ -1,0 +1,5 @@
+This is a test of github, creating a repository of examples for my Information Systems class. This class has evolved into primarily an external data structures course, largely focused on the creation of indexed files. Hash tables, B+ trees, and inverted lists are all discussed.
+
+The examples are not guaranteed to function or even compile and should only be used to inspire your own creations. The examples include an attempt to create a Java DirectIO class that references a file as a collection of objects and some C and COBOL examples. The class is required for our information systems track which includes COBOL programming. I have attempted to pull away a little from language specific teaching to include our C students, as well. All of our students take Java for their first two programming courses, hence the Java example.
+edu.shsu.hartness.records is a package for Java classes related to direct record I/O.
+I've included some other files but don't have time to review their precise purpose at the moment; I'll try to include a more detailed index in a later version.
