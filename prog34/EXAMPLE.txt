@@ -1,0 +1,16 @@
+add 1 to w-customer-size.
+move w-customer-size to w-recpos.
+write customer-rec.
+call 'add-customer-phone' using w-status, cust-phone, w-recpos.
+if w-status = 0 then
+    call 'add-customer-name' using w-status, cust-name, w-recpos
+else
+    display "Duplicate phone numbers!".
+...
+* input customer phone
+    call 'search-customer-phone' using w-recpos, w-phone-number.
+    if w-recpos = 0 then
+        display "Sorry, that number is not known: ", w-phone-number
+    else
+        read customer-file
+        perform do-cool-stuff-with-customer.
