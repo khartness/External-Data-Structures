@@ -128,7 +128,10 @@ static int splitBucket(EHTFILE * file, char * key, unsigned position) {
 		}
 		ptr += entrySize;
 	}
-
+    if ( numDifferent == 0 ) {
+        fprintf(stderr, "Unable to process this key!\n");
+        exit(1);
+	}
 	if ( oldBkt.length > 0 ) {
 	    IndexOverlay * newEntry = (IndexOverlay *)newPtr;
 	    newEntry->link = position;

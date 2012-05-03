@@ -10,6 +10,10 @@
 #if ! defined(_EHTFILE_H)
 #define _EHTFILE_H 1
 
+#if ! defined(NO_RECORD)
+#define NO_RECORD 0xffffffff
+#endif
+
 typedef
     struct {
 		unsigned short length;
@@ -19,7 +23,7 @@ typedef
 typedef
     struct {
 		unsigned link;
-		char key[0];
+		char key[1];
 	} IndexOverlay;
 
 typedef
