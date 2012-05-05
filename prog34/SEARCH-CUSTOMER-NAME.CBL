@@ -45,6 +45,8 @@
            88  FOUND   VALUE 'Y'.
            88  NOT-FOUND VALUE 'N'.
        01  X           PIC 99 COMP.
+       01  W-LFU       PIC 99 COMP.
+       01  W-TEMP      PIC 9(9) COMP.
        
        LINKAGE SECTION.
        01  L-POSITION  PIC 9(9) COMP.
@@ -57,31 +59,31 @@
            IF FOUND THEN
                MOVE 1 TO X
                PERFORM UNTIL X > W-NUM-KEYS(X-POS) OR
-                             W-KEY(X) OF W-BTREE-REC(X-POS) >= W-SEARCH-NAME
+                             W-KEY(X-POS, X) >= L-NAME
                    ADD 1 TO X
                END-PERFORM
                IF X > W-NUM-KEYS(X-POS) or
-                  w-key(X) OF W-BTREE-REC(x-pos) not = l-name THEN
+                  w-key(X-POS, X) not = l-name THEN
                    MOVE 0 TO L-POSITION
                ELSE
-                   MOVE W-LINK(X) OF W-BTREE-REC(X-POS) TO L-POSITION.
+                   MOVE W-LINK(X-POS, X) TO L-POSITION.
 
        BT-FIND-LEAF.
            SET NOT-FOUND TO TRUE.
            MOVE W-ROOT TO W-BTREE-POS.
            PERFORM UNTIL FOUND
                PERFORM READ-RECORD
-               IF W-LEAF = 'Y' THEN
+               IF W-LEAF(X-POS) = 'Y' THEN
                    SET FOUND TO TRUE
                ELSE
                    ADD 1 TO W-TOP
                    MOVE W-BTREE-POS TO W-POS(W-TOP)
                    MOVE 1 TO X
                    PERFORM UNTIL X > W-NUM-KEYS(X-POS) OR
-                                 L-NAME < W-KEY(X) OF W-BTREE-REC(X-POS)
+                                 L-NAME < W-KEY(X-POS, X)
                        ADD 1 TO X
                    END-PERFORM
-                   MOVE W-LINK(X) OF W-BTREE-REC(X-POS) TO W-BTREE-POS
+                   MOVE W-LINK(X-POS, X) TO W-BTREE-POS
                END-IF
            END-PERFORM.
 
@@ -104,5 +106,6 @@
                MOVE 0 TO W-FREQUENCY(X-POS)
                MOVE W-BTREE-POS TO W-BTREE-RECORD(X-POS)
                READ NAME-INDEX-FILE
-               CALL 'UNPACK-DATA' USING NAMEINDEX-REC, W-BTREE-REC(X-POS).
+               CALL 'UNPACK-DATA'
+                   USING NAMEINDEX-REC, W-BTREE-REC(X-POS).
            ADD 1 TO W-FREQUENCY(X-POS).

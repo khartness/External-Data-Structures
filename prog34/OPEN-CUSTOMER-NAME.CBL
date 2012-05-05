@@ -54,6 +54,8 @@
 
        PROCEDURE DIVISION USING L-FILENAME.
        ENTRY-POINT.
+           MOVE 'N' TO W-NAME-INDEX-CHANGED.
+           INITIALIZE W-BTREE-CACHE.
            OPEN INPUT SEQ-NAME-INDEX.
            if w-status not = '00' then
                close seq-name-index
@@ -68,5 +70,6 @@
                close seq-name-index.
            open i-o name-index-file.
            move 1 to w-btree-pos.
-           read nameindex-rec into w-name-index-header.
+           read name-index-file into w-name-index-header.
            goback.
+

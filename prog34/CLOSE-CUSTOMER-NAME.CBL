@@ -19,7 +19,11 @@
            05  IF-PREFIX   PIC 999 COMP.
            05  IF-DATA     PIC X(510).
 
+       WORKING-STORAGE SECTION.
+       01  W-BTREE-POS external    PIC 9(9) COMP.
+
        PROCEDURE DIVISION.
        ENTRY-POINT.
            CLOSE NAME-INDEX-FILE.
            goback.
+

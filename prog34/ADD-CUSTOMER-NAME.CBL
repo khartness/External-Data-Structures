@@ -68,6 +68,9 @@
        01  W-STATUS        PIC 9 COMP.
            88  RECORD-FULL VALUE 1.
        01  W-SIZE          PIC 999 COMP.
+       01  W-NEXT-LENGTH   PIC 999 COMP.
+       01  W-LFU           PIC 99 COMP.
+       01  W-TEMP          PIC 9(9) COMP.
       
        LINKAGE SECTION.
        01  L-STATUS    PIC 9.
@@ -100,11 +103,12 @@
                MOVE 'N' TO SR-LEAF
                MOVE 1 TO SR-NUM-KEYS
                MOVE W-ROOT TO SR-LINK(1)
-               MOVE W-MIDDLE-POS TO SR-LINK(2)
+               MOVE W-MID-POS TO SR-LINK(2)
                MOVE W-MID-NAME TO SR-KEY(1)
-               CALL 'PACK-RECORD' USING W-STATUS, NAMEINDEX-REC, SPLIT-REC
+               CALL 'PACK-RECORD'
+                   USING W-STATUS, NAMEINDEX-REC, SPLIT-REC
                MOVE W-NAME-INDEX-SIZE TO W-BTREE-POS, W-ROOT
-               WRITE INDEX-REC
+               WRITE NAMEINDEX-REC
                    INVALID KEY
                        SET STATUS-OTHER TO TRUE
                    NOT INVALID KEY
@@ -127,26 +131,31 @@
                goback.
            
            ADD 1 TO W-NUM-KEYS(X-POS).
-           MOVE W-LINK(W-NUM-KEYS(X-POS)) TO W-LINK(W-NUM-KEYS(X-POS) + 1).
+           MOVE W-LINK(X-POS, W-NUM-KEYS(X-POS)) TO
+                W-LINK(X-POS, W-NUM-KEYS(X-POS) + 1).
            PERFORM VARYING X FROM W-NUM-KEYS(X-POS) BY -1
-                   UNTIL X = 1 OR W-NEW-NAME > W-KEY(X - 1) OF W-BTREE-REC(X-POS)
-               MOVE W-KEY(X - 1) OF W-BTREE-REC(X-POS) TO W-KEY(X) OF W-BTREE-REC(X-POS)
-               MOVE W-LINK(X - 1) OF W-BTREE-REC(X-POS) TO W-LINK(X) OF W-BTREE-REC(X-POS)
+                   UNTIL X = 1 OR
+                         W-NEW-NAME > W-KEY(X-POS, X - 1)
+               MOVE W-KEY(X-POS, X - 1) TO W-KEY(X-POS, X)
+               MOVE W-LINK(X-POS, X - 1) TO W-LINK(X-POS, X)
            END-PERFORM.
-           MOVE W-NEW-NAME TO W-KEY(X) OF W-BTREE-REC(X-POS).
+           MOVE W-NEW-NAME TO W-KEY(X-POS, X).
            IF W-LEAF(X-POS) = 'Y' THEN
-               MOVE W-NEW-POS TO W-LINK(X) OF W-BTREE-REC(X-POS)
+               MOVE W-NEW-POS TO W-LINK(X-POS, X)
            ELSE
-               MOVE W-NEW-POS TO W-LINK(X + 1) OF W-BTREE-REC(X-POS).
+               MOVE W-NEW-POS TO W-LINK(X-POS, X + 1).
                
-           CALL 'PACK-RECORD' USING W-STATUS, NAMEINDEX-REC, W-BTREE-REC(X-POS).
+           CALL 'PACK-RECORD'
+               USING W-STATUS, NAMEINDEX-REC, W-BTREE-REC(X-POS).
            IF RECORD-FULL THEN
                move 'Y' to w-name-index-changed
                PERFORM SPLIT-NODE
-               CALL 'PACK-RECORD' USING W-STATUS, NAMEINDEX-REC, W-BTREE-REC(X-POS)
+               CALL 'PACK-RECORD'
+                   USING W-STATUS, NAMEINDEX-REC, W-BTREE-REC(X-POS)
                PERFORM REWRITE-RECORD
                MOVE W-MID-POS TO W-BTREE-POS
-               CALL 'PACK-RECORD' USING W-STATUS, NAMEINDEX-REC, SPLIT-REC
+               CALL 'PACK-RECORD'
+                   USING W-STATUS, NAMEINDEX-REC, SPLIT-REC
                WRITE NAMEINDEX-REC
                    INVALID KEY
                        DISPLAY "Unable to write index!"
@@ -160,15 +169,16 @@
        SPLIT-NODE.
            PERFORM GET-MIDDLE-KEY.
            IF W-LEAF(X-POS) = 'Y' THEN
-               CALL 'MINIMAL-SEPARATOR' USING W-KEY(X - 1), W-KEY(X),
+               CALL 'MINIMAL-SEPARATOR' USING W-KEY(X-POS, X - 1),
+                                              W-KEY(X-POS, X),
                                               W-MID-NAME
            ELSE
-               MOVE W-KEY(X) TO W-MID-NAME.
+               MOVE W-KEY(X-POS, X) TO W-MID-NAME.
                
            ADD 1 TO W-NAME-INDEX-SIZE.
            MOVE W-NAME-INDEX-SIZE TO W-MID-POS.
            MOVE 0 TO SR-NUM-KEYS.
-           MOVE W-LEAF TO SR-LEAF.
+           MOVE W-LEAF(X-POS) TO SR-LEAF.
            SUBTRACT 1 FROM X GIVING W-NEXT-LENGTH.
            IF W-LEAF(X-POS) = 'N' THEN
                ADD 1 TO X.
@@ -181,8 +191,9 @@
            MOVE W-LINK(X-POS, X) TO SR-LINK(SR-NUM-KEYS + 1).
            MOVE W-NEXT-LENGTH TO W-NUM-KEYS(X-POS).
            IF W-LEAF(X-POS) = 'Y' THEN
-               MOVE W-NAME-INDEX-SIZE TO W-LINK(W-NEXT-LENGTH + 1)
-                                         OF W-BTREE-REC(X-POS).
+               MOVE W-NAME-INDEX-SIZE TO
+                   W-LINK(X-POS, W-NEXT-LENGTH + 1).
+
        GET-MIDDLE-KEY.
       *    Each key is up to 30 characters, plus a link and a string length.
       *    This adds 35, then reduces the number until the end of the string
@@ -202,9 +213,9 @@
        REWRITE-RECORD.
            ADD 1 TO W-FREQUENCY(X-POS).
            CALL 'PACK-RECORD'
-               USING W-STATUS, NAME-INDEX-REC, W-BTREE-REC(X-POS).
+               USING W-STATUS, NAMEINDEX-REC, W-BTREE-REC(X-POS).
            IF W-STATUS = 0 THEN
-               REWRITE NAME-INDEX-REC.
+               REWRITE NAMEINDEX-REC.
 
        READ-RECORD.
            MOVE 1 TO W-LFU.
@@ -225,5 +236,6 @@
                MOVE 0 TO W-FREQUENCY(X-POS)
                MOVE W-BTREE-POS TO W-BTREE-RECORD(X-POS)
                READ NAME-INDEX-FILE
-               CALL 'UNPACK-DATA' USING NAMEINDEX-REC, W-BTREE-REC(X-POS).
+               CALL 'UNPACK-DATA'
+                   USING NAMEINDEX-REC, W-BTREE-REC(X-POS).
            ADD 1 TO W-FREQUENCY(X-POS).
