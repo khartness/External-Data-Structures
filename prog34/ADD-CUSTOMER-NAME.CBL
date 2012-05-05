@@ -96,6 +96,7 @@
            IF NOT NO-SPLIT THEN
       *        make a new root
                ADD 1 TO W-NAME-INDEX-SIZE
+               move 'Y' to w-name-index-changed
                MOVE 'N' TO SR-LEAF
                MOVE 1 TO SR-NUM-KEYS
                MOVE W-ROOT TO SR-LINK(1)
@@ -109,6 +110,11 @@
                    NOT INVALID KEY
                        MOVE 1 TO W-BTREE-POS
                        REWRITE NAMEINDEX-REC FROM W-NAME-INDEX-HEADER.
+           IF W-NAME-INDEX-CHANGED = 'Y' THEN
+               MOVE 'N' TO W-NAME-INDEX-CHANGED
+               MOVE 1 TO W-BTREE-POS
+               REWRITE NAMEINDEX-REC FROM W-NAME-INDEX-HEADER.
+           GOBACK.
 
        BT-INSERT-NODE.
       *    With compression, easier to add key, attempt compress, then
@@ -135,6 +141,7 @@
                
            CALL 'PACK-RECORD' USING W-STATUS, NAMEINDEX-REC, W-BTREE-REC(X-POS).
            IF RECORD-FULL THEN
+               move 'Y' to w-name-index-changed
                PERFORM SPLIT-NODE
                CALL 'PACK-RECORD' USING W-STATUS, NAMEINDEX-REC, W-BTREE-REC(X-POS)
                PERFORM REWRITE-RECORD

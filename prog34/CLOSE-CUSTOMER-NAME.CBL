@@ -1,0 +1,25 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID.  OPEN-CUSTOMER-NAME.
+       AUTHOR. Ken Hartness.
+      *DESCRIPTION.
+      *    Closing a B+ Tree of names.
+
+       ENVIRONMENT DIVISION.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+           SELECT NAME-INDEX-FILE ASSIGN TO W-FILENAME
+               ORGANIZATION IS RELATIVE
+               ACCESS IS RANDOM
+               RELATIVE KEY IS W-BTREE-POS.
+
+       DATA DIVISION.
+       FILE SECTION.
+       FD  NAME-INDEX-FILE EXTERNAL.
+       01  NAMEINDEX-REC.
+           05  IF-PREFIX   PIC 999 COMP.
+           05  IF-DATA     PIC X(510).
+
+       PROCEDURE DIVISION.
+       ENTRY-POINT.
+           CLOSE NAME-INDEX-FILE.
+           goback.
