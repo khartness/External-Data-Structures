@@ -10,6 +10,7 @@
            05  W-LINK      PIC 9(9) COMP.
            05  W-KEY-LEN   PIC 99 COMP.
            05  W-KEY       PIC X(30).
+       01  W-REMAINING     PIC 999 COMP.
            
        LINKAGE SECTION.
        01  L-STATUS        PIC 9 COMP.
